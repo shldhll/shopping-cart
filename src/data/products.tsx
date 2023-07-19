@@ -8,23 +8,23 @@ export interface IProduct {
 
 export const products: IProduct[] = [
     {
-        code: "X7R2OPX",
-        name: "Shirt",
+        code: "TSHIRT",
+        name: "T-Shirt",
         price: 20,
         thumb: "/TSHIRT_thumb.png",
         image: "/TSHIRT.jpg",
     },
     {
-        code: "X2G2OPZ",
-        name: "Mug",
-        price: 5,
+        code: "MUG",
+        name: "Coffee Mug",
+        price: 7.5,
         thumb: "/MUG_thumb.png",
         image: "/MUG.jpg",
     },
     {
-        code: "X3W2OPY",
+        code: "CAP",
         name: "Cap",
-        price: 10,
+        price: 5,
         thumb: "/CAP_thumb.png",
         image: "/CAP.jpg",
     },
