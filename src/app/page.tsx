@@ -1,16 +1,19 @@
 'use client'
 
+import { useEffect, useState } from "react";
+
 import Modal from "@/components/products/Modal";
 import { IProduct, products } from "@/data/products";
-import { useEffect, useState } from "react";
+import { Amount } from "@/utils/amount";
+
 
 export default function Home() {
   const [productQuantity, setProductQuantity] = useState<Record<string, number>>({});
   const [totalCount, setTotalCount] = useState<number>(0);
-  const [totalPrice, setTotalPrice] = useState<number>(0);
-  const [tshirtDiscount, setTshirtDiscount] = useState<number>(0);
-  const [capDiscount, setCapDiscount] = useState<number>(0);
-  const [finalPrice, setFinalPrice] = useState<number>(0);
+  const [totalPrice, setTotalPrice] = useState<Amount>(new Amount(0, 2));
+  const [tshirtDiscount, setTshirtDiscount] = useState<Amount>(new Amount(0, 2));
+  const [capDiscount, setCapDiscount] = useState<Amount>(new Amount(0, 2));
+  const [finalPrice, setFinalPrice] = useState<Amount>(new Amount(0, 2));
 
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [selectedProduct, setSelectedProduct] = useState<IProduct | null>(null);
@@ -18,13 +21,19 @@ export default function Home() {
   useEffect(() => {
     // Setting total product count and price
     let count = 0;
-    let price = 0;
+    let price = new Amount(0, 2);
 
     for (const productCode in productQuantity) {
-      const productPrice = products.find((product: IProduct) => product.code === productCode)?.price || 0;
+      const productPrice = products.find((product: IProduct) => product.code === productCode)?.price || new Amount(0, 2);
 
       count += productQuantity[productCode] === undefined ? 0 : productQuantity[productCode];
-      price += productQuantity[productCode] === undefined ? 0 : productQuantity[productCode] * productPrice;
+      price = (
+        productQuantity[productCode] === undefined
+          ?
+          new Amount(0, 2)
+          :
+          productPrice.multiply(new Amount(productQuantity[productCode], 0))
+      ).add(price);
     }
 
     setTotalCount(count);
@@ -34,20 +43,20 @@ export default function Home() {
     const tshirtCount = productQuantity["TSHIRT"] || 0;
     const capCount = productQuantity["CAP"] || 0;
 
-    const tshirtPrice = products.find((product: IProduct) => product.code === "TSHIRT")?.price || 0;
-    const capPrice = products.find((product: IProduct) => product.code === "CAP")?.price || 0;
+    const tshirtPrice = products.find((product: IProduct) => product.code === "TSHIRT")?.price || new Amount(0, 2);
+    const capPrice = products.find((product: IProduct) => product.code === "CAP")?.price || new Amount(0, 2);
 
     if (tshirtCount >= 3) {
-      setTshirtDiscount(tshirtCount * (tshirtPrice * 0.25));
+      setTshirtDiscount(tshirtPrice.multiply(new Amount(25, 2)).multiply(new Amount(tshirtCount, 0)));
     } else {
-      setTshirtDiscount(0);
+      setTshirtDiscount(new Amount(0, 2));
     }
 
-    setCapDiscount(Math.floor(capCount / 3) * capPrice);
+    setCapDiscount(capPrice.multiply(new Amount(Math.floor(capCount / 3), 0)));
   }, [productQuantity])
 
   useEffect(() => {
-    setFinalPrice(totalPrice - tshirtDiscount - capDiscount);
+    setFinalPrice(totalPrice.subtract(tshirtDiscount).subtract(capDiscount));
   }, [totalPrice, tshirtDiscount, capDiscount])
 
   const incrementProductQuantity = (productCode: string) => {
@@ -118,11 +127,11 @@ export default function Home() {
                         <button className="text-[#734ffc] p-2 text-xl font-medium" onClick={() => { incrementProductQuantity(product.code) }}>+</button>
                       </div>
                     </td>
-                    <td className="text-center pt-8 pr-8">{product.price.toFixed(2)} €</td>
+                    <td className="text-center pt-8 pr-8">{product.price.str()} €</td>
                     <td className="text-center pt-8 pr-8 w-32">{
                       productQuantity[product.code] === undefined
-                        ? Number(0).toFixed(2)
-                        : (productQuantity[product.code] * product.price).toFixed(2)
+                        ? new Amount(0, 2).str()
+                        : ((product.price.multiply(new Amount(productQuantity[product.code], 0))).str())
                     } €</td>
                   </tr>
                 ))}
@@ -136,20 +145,20 @@ export default function Home() {
               <p className="mt-8 pb-4 text-xl font-medium border-b-[2px] border-[#bbbbc0] w-[80%]">Products</p>
               <div className="flex w-[80%] py-8 justify-between border-b-[2px] border-[#bbbbc0]">
                 <span>{totalCount} Items</span>
-                <span>{totalPrice.toFixed(2)} €</span>
+                <span>{totalPrice.str()} €</span>
               </div>
               <div className="flex flex-col w-[80%] py-5 border-b-[2px] border-[#bbbbc0] space-y-4">
                 <span className="uppercase font-light text-sm text-gray-500">Discounts</span>
                 <div className="flex flex-col">
                   <div className="flex justify-between">
                     <span>x3 T-Shirt offer</span>
-                    <span>- {tshirtDiscount.toFixed(2)} €</span>
+                    <span>- {tshirtDiscount.str()} €</span>
                   </div>
                 </div>
                 <div className="flex flex-col">
                   <div className="flex justify-between">
                     <span>2x1 Cap offer</span>
-                    <span>- {capDiscount.toFixed(2)} €</span>
+                    <span>- {capDiscount.str()} €</span>
                   </div>
                 </div>
               </div>
@@ -157,7 +166,7 @@ export default function Home() {
             <div className="w-full flex flex-col items-center">
               <div className="flex w-[80%] mb-2 py-4 justify-between border-t-[2px] border-[#bbbbc0] items-center">
                 <span>Final Price</span>
-                <span className="text-xl">{finalPrice.toFixed(2)} €</span>
+                <span className="text-xl">{finalPrice.str()} €</span>
               </div>
               <button className="bg-[#734ffc] w-[80%] mb-10 p-3 rounded-md shadow text-gray-200 font-medium">
                 Checkout

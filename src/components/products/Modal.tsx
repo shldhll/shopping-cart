@@ -19,7 +19,7 @@ const Modal = ({ product, setIsModalOpen, addToCart }: IProps) => {
                 </div>
                 <div className="w-[80%] flex items-center justify-between border-b-[2px] border-gray-200 mt-8 pb-4 text-xl font-medium">
                     <span>{product.name}</span>
-                    <span>{product.price} €</span>
+                    <span>{product.price.str()} €</span>
                 </div>
                 <p className="text-sm w-[80%] my-6">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sodales ante nibh, sed malesuada risus blandit vel. Nulla nec ante pretium, molestie quam in, porttitor lacus. Mauris risus velit, feugiat eget felis eget, congue convallis justo.</p>
                 <span className="mt-8 pt-4 border-t w-[80%] text-sm text-gray-600">Product code {product.code}</span>
