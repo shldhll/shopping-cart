@@ -7,8 +7,12 @@ export default function Home() {
   const [productQuantity, setProductQuantity] = useState<Record<string, number>>({});
   const [totalCount, setTotalCount] = useState<number>(0);
   const [totalPrice, setTotalPrice] = useState<number>(0);
+  const [tshirtDiscount, setTshirtDiscount] = useState<number>(0);
+  const [capDiscount, setCapDiscount] = useState<number>(0);
+  const [finalPrice, setFinalPrice] = useState<number>(0);
 
   useEffect(() => {
+    // Setting total product count and price
     let count = 0;
     let price = 0;
 
@@ -21,7 +25,26 @@ export default function Home() {
 
     setTotalCount(count);
     setTotalPrice(price);
+
+    // Setting discounts
+    const tshirtCount = productQuantity["TSHIRT"] || 0;
+    const capCount = productQuantity["CAP"] || 0;
+
+    const tshirtPrice = products.find((product: IProduct) => product.code === "TSHIRT")?.price || 0;
+    const capPrice = products.find((product: IProduct) => product.code === "CAP")?.price || 0;
+
+    if (tshirtCount >= 3) {
+      setTshirtDiscount(tshirtCount * (tshirtPrice * 0.25));
+    } else {
+      setTshirtDiscount(0);
+    }
+
+    setCapDiscount(Math.floor(capCount / 3) * capPrice);
   }, [productQuantity])
+
+  useEffect(() => {
+    setFinalPrice(totalPrice - tshirtDiscount - capDiscount);
+  }, [totalPrice, tshirtDiscount, capDiscount])
 
   const incrementProductQuantity = (productCode: string) => {
     // Create a new key for the product and set the value to '1' if it doesn't exist
@@ -87,11 +110,11 @@ export default function Home() {
                       <button className="text-[#734ffc] p-2 text-xl font-medium" onClick={() => { incrementProductQuantity(product.code) }}>+</button>
                     </div>
                   </td>
-                  <td className="text-center pt-8 pr-8">{product.price} €</td>
+                  <td className="text-center pt-8 pr-8">{product.price.toFixed(2)} €</td>
                   <td className="text-center pt-8 pr-8">{
                     productQuantity[product.code] === undefined
-                      ? 0
-                      : productQuantity[product.code] * product.price
+                      ? Number(0).toFixed(2)
+                      : (productQuantity[product.code] * product.price).toFixed(2)
                   } €</td>
                 </tr>
               ))}
@@ -105,28 +128,28 @@ export default function Home() {
             <p className="mt-8 pb-4 text-xl font-medium border-b-[2px] border-[#bbbbc0] w-[80%]">Products</p>
             <div className="flex w-[80%] py-8 justify-between border-b-[2px] border-[#bbbbc0]">
               <span>{totalCount} Items</span>
-              <span>{totalPrice} €</span>
+              <span>{totalPrice.toFixed(2)} €</span>
             </div>
             <div className="flex flex-col w-[80%] py-5 border-b-[2px] border-[#bbbbc0] space-y-4">
               <span className="uppercase font-light text-sm text-gray-500">Discounts</span>
               <div className="flex flex-col">
                 <div className="flex justify-between">
                   <span>x3 T-Shirt offer</span>
-                  <span>- 0 €</span>
+                  <span>- {tshirtDiscount.toFixed(2)} €</span>
                 </div>
               </div>
               <div className="flex flex-col">
                 <div className="flex justify-between">
-                  <span>2x1 Cup offer</span>
-                  <span>- 0 €</span>
+                  <span>2x1 Cap offer</span>
+                  <span>- {capDiscount.toFixed(2)} €</span>
                 </div>
               </div>
             </div>
           </div>
           <div className="w-full flex flex-col items-center">
             <div className="flex w-[80%] mb-2 py-4 justify-between border-t-[2px] border-[#bbbbc0] items-center">
-              <span>Total</span>
-              <span className="text-xl">{totalPrice} €</span>
+              <span>Final Price</span>
+              <span className="text-xl">{finalPrice.toFixed(2)} €</span>
             </div>
             <button className="bg-[#734ffc] w-[80%] mb-10 p-3 rounded-md shadow text-gray-200 font-medium">
               Checkout
